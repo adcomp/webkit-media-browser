@@ -1,0 +1,18 @@
+##
+#   Webkit Media Browser
+#
+#   Created by
+#       David Art [aka] ADcomp <david.madbox@gmail.com>
+#       http://davidmadbox.wordpress.com/
+#
+#   This program is distributed under the terms of the GNU General Public License
+#   For more info see http://www.gnu.org/licenses/gpl.txt
+#
+##
+
+A simple media browser.
+
+language : python
+gui : gtk / webkit
+
+depend : mplayer (audio/video)
