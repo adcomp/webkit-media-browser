@@ -23,7 +23,7 @@ try:
     import webkit
     import jswebkit
 except:
-    print('Error : Install python-webkit python-jswebkit module ..')
+    print('Error : Install python-webkit python-jswebkit')
     sys.exit()
 
 realpath = os.path.dirname(os.path.realpath( __file__ ))
