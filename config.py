@@ -3,8 +3,6 @@
 
 from gtk import gdk
 
-from common import *
-
 class Theme:
     
     def __init__(self, name):
@@ -13,6 +11,8 @@ class Theme:
         self.fullscreen = 0
         self.cats = {}
         self.ext = {}
+        self.img_file = {}
+        self.img_menu = {}
         
         self.image_bg = 'images/bg.jpg'
         

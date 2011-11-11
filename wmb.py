@@ -96,10 +96,9 @@ class WebkitMediaBrowser():
 
         self.box.pack_start(self.webview)
 
-        if self.theme.use_embed_mplayer:
-            self.mplayer = mplayer.MPlayer(self)
-            self.box.pack_start(self.mplayer)
-            self.mplayer.realize()
+        self.mplayer = mplayer.MPlayer(self)
+        self.box.pack_start(self.mplayer)
+        self.mplayer.realize()
 
         ##  signal/callback
         self.window.connect('destroy', self._quit)
@@ -551,8 +550,7 @@ class WebkitMediaBrowser():
         self.update_content('status', html)
         
     def _quit(self, widget=None):
-        if self.theme.use_embed_mplayer:
-            self.mplayer.close()
+        self.mplayer.close()
         gtk.main_quit()
 
     def main(self):
