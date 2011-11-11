@@ -7,29 +7,34 @@
 
     <body>
         
-        <div id="background"> </div>
+        <div id="background"></div>
         
         <div id="container">
 			
-			<div id="mediabrowser">
+	    <div id="mediabrowser">
 
-				<div id="top"></div>
+		    <div id="top"></div>
+		    <div id="ctrlpreview">
+			<div id="preview"></div>
+			<div id="ctrl">
+			    <img src="images/media-skip-backward.svg">
+			    <img src="images/media-playback-stop.svg">
+			    <img src="images/media-playback-start.svg">
+			    <img src="images/media-skip-forward.svg">
+			</div>
+			<div id="items"></div>
+			<div id="progressbar"></div>
+		    </div>
+		    <div id="page"></div>
+		    <p class="clear"></p> 
+		    <div id="status"></div>
+		    <p class="clear"></p> 
 				
-				<div id="preview"></div>
-				
-				<div id="page"></div>
-					
-				<p class="clear"></p> 
-				
-				<div id="bottom"></div>
-				
-				<p class="clear"></p> 
-				
-            </div>
+            </div><!-- mediabrowser -->
             
         </div><!-- container -->
         
-        <div id="imageview"></div>
+        <div id="imageviewer"><div id="imagecell"></div></div>
         
     </body>
 </html>

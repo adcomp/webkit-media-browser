@@ -12,8 +12,7 @@ class Theme:
 
         self.fullscreen = 0
         
-        #~ self.image_bg = 'images/dark-abstract.jpg'
-        self.image_bg = 'images/1.jpg'
+        self.image_bg = 'images/bg.jpg'
         
         if self.fullscreen:
             self.width = gdk.screen_width()
@@ -27,7 +26,7 @@ class Theme:
         self.use_embed_mplayer = 1
 
         self.cmd_video = 'mplayer'
-        self.cmd_video_opt = '-ao alsa -vo xv -fs -nolirc -quiet'
+        self.cmd_video_opt = '-ao alsa -vo x11 -nojoystick -nolirc -quiet -zoom'
         
         self.cats = {'PICTURES':'/mnt/data/images/wallpaper',
                      'VIDEO':'/mnt/data/video',
@@ -40,14 +39,14 @@ class Theme:
         self.ext['MUSIC'] = ('mp3', 'ogg', 'wav', 'wma')
         self.ext['PICTURES'] = ('png', 'jpg', 'jpeg', 'gif', 'svg', ' bmp')
 
-        self.img_file = {'PICTURES': 'images/image-x.png',
-                         'VIDEO': 'images/video-x.png',
-                         'MUSIC': 'images/audio-x.png',
+        self.img_file = {'PICTURES': 'images/image-x-generic.svg',
+                         'VIDEO': 'images/video-x-generic.svg',
+                         'MUSIC': 'images/audio-x-generic.svg',
                         }
 
-        self.img_menu = {'PICTURES': 'images/icon-pictures.png',
-                         'VIDEO': 'images/icon-video.png',
-                         'MUSIC': 'images/icon-music.png',
-                         'PROGRAMS': 'images/icon-app.png',
-                         'SYSTEM': 'images/icon-system.png',
+        self.img_menu = {'PICTURES': 'images/folder-pictures.svg',
+                         'VIDEO': 'images/folder-videos.svg',
+                         'MUSIC': 'images/folder-music.svg',
+                         'PROGRAMS': 'images/text-x-python.svg',
+                         'SYSTEM': 'images/applications-system.svg',
                         }

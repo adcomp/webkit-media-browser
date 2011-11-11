@@ -15,18 +15,34 @@ import os
 import os.path
 import sys
 
-from common import *
 from config import *
+import mplayer
 import sysinfo
 
 try:
     import webkit
+    import jswebkit
 except:
-    print('Error : Install python-webkit module ..')
+    print('Error : Install python-webkit python-jswebkit module ..')
     sys.exit()
 
 realpath = os.path.dirname(os.path.realpath( __file__ ))
 os.chdir(realpath)
+
+def get_ext(fullpath):
+    if not '.' in fullpath:
+        return None
+    else:
+        return fullpath.split('.')[-1]
+
+class Entry:
+    
+    def __init__(self, name, xtype, ext=None):
+        self.name = name
+        self.xtype = xtype
+        
+        if ext:
+            self.ext = ext
 
 class WebkitMediaBrowser():
 
@@ -74,14 +90,14 @@ class WebkitMediaBrowser():
         #~ self.webview.connect("navigation-policy-decision-requested", self.nav_request)
         self.webview.connect('load-finished', self.onLoad)
         #~ self.webview.connect('realize', self._realize)
-        self.webview.set_size_request(self.theme.width, self.theme.height)
+        #~ self.webview.set_size_request(self.theme.width, self.theme.height)
         
         self.webview.open('%s/themes/%s/index.html' % (realpath, self.theme.name))
 
         self.box.pack_start(self.webview)
 
         if self.theme.use_embed_mplayer:
-            self.mplayer = MPlayer(self.theme)
+            self.mplayer = mplayer.MPlayer(self)
             self.box.pack_start(self.mplayer)
             self.mplayer.realize()
 
@@ -150,6 +166,12 @@ class WebkitMediaBrowser():
                 
         self.to_html()
 
+    def get_html(self):
+        frame = self.webview.get_main_frame()
+        ctx = jswebkit.JSContext(frame.get_global_context())
+        text = ctx.EvaluateScript("document.body.innerHTML")
+        return text
+
     def to_html(self):
         #~ print 'to html ..'
         
@@ -161,16 +183,15 @@ class WebkitMediaBrowser():
             for i in self.data:
                 
                 if index == self.browser_pos:
-                    html += "<li class=\"menufocus\">%s</li>" % i
+                    html += "<li class=\"menufocus\"><a href=\"\">%s</a></li>" % i
                     preview = '<img src=\"%s\">' % self.theme.img_menu[i]
                 else:
-                    html += '<li class=\"menu\">%s</li>' % i
+                    html += '<li class=\"menu\"><a href=\"\">%s</a></li>' % i
                 index += 1
                 
             html += '</div>'
             
-            self.update_content('top', '')
-            self.update_content('bottom', '')
+            self.update_content('items', '')
         else:
           
             path = ''
@@ -191,35 +212,42 @@ class WebkitMediaBrowser():
                 txt = txt.replace(' ','<i>_</i>')
                     
                 if index == self.browser_pos:
-                    html += '<li class=\"browserfocus\">%s</li>' % txt
+                    html += '<li class=\"browserfocus\"><a href=\"\">%s</a></li>' % txt
+                    
                     if self.data[i+self.browser_offset].xtype == 'DIR':
+                        
                         if self.cur_cat == 'MUSIC':
                             cover_exist = False
                             for c in ('cover.jpg', 'cover.png','folder.jpg','folder.png'):
-                                if os.path.exists(fullpath + '/' + c):
-                                    preview = '<img src=\"%s\">' % (fullpath + '/cover.jpg')
+                                p = os.path.abspath(fullpath + '/' + c)
+                                if os.path.exists(p):
+                                    preview = '<img src=\"%s\">' % p
                                     cover_exist = True
                             if not cover_exist:
                                 preview = '<img src=\"%s\">' % self.theme.img_menu[self.cur_cat]
                         else:
                             preview = '<img src=\"%s\">' % self.theme.img_menu[self.cur_cat]
+                            
                     else:
+                        
                         if self.cur_cat == 'PICTURES':
                             preview = '<img src=\"%s\">' % fullpath
                             if self.cur_draw == 'picture':
-                                self.update_content('imageview', preview)
+                                self.show_image(fullpath)
                         else:
                             preview = '<img src=\"%s\">' % self.theme.img_file[self.cur_cat]
+                            
                 else:
-                    html += '<li class=\"browser\">%s</li>' % txt
+                    html += '<li class=\"browser\"><a href=\"\">%s</a></li>' % txt
+                    
                 index += 1
                 
                 # ( xx/xx ) items in this directory ..
                 if self.browser_pos == 0 and self.browser_offset == 0:
-                    bottom = '( <b>' + str(len(self.data)-1) + '</b> ) items'
+                    items = '( <b>' + str(len(self.data)-1) + '</b> ) items'
                 else:
-                    bottom = '( <b>' + str(self.browser_pos + self.browser_offset) + ' / ' + str(len(self.data)-1) + '</b> ) items'
-                self.update_content('bottom', bottom)
+                    items = '( <b>' + str(self.browser_pos + self.browser_offset) + ' / ' + str(len(self.data)-1) + '</b> ) items'
+                self.update_content('items', items)
                 
             html += '</ul></div>'
 
@@ -238,7 +266,10 @@ class WebkitMediaBrowser():
             self.to_html()
             return
 
-        if event.keyval == gtk.keysyms.Escape:
+        if event.keyval == gtk.keysyms.F5:
+            print self.get_html()
+
+        if event.keyval == gtk.keysyms.Escape or event.keyval == gtk.keysyms.BackSpace:
             self.cmd_escape()
         elif event.keyval == gtk.keysyms.Up:
             self.cmd_up()
@@ -253,7 +284,15 @@ class WebkitMediaBrowser():
         elif event.keyval == gtk.keysyms.o:
             self.cmd_o()
         elif event.keyval == gtk.keysyms.x:
-            self.mplayer.stop()
+            self.mplayer.close()
+        elif event.keyval == gtk.keysyms.Home:
+            if self.cur_draw == 'picture':
+                self.flip_image()
+            if not self.cur_draw == 'video':
+                self.cur_draw = 'menu'
+                self.browser_pos = 0
+                self.bpos_tab = []
+                self.draw_list()
             
         if not self.cur_draw == 'video':
             self.to_html()
@@ -306,7 +345,9 @@ class WebkitMediaBrowser():
                 for p in self.path: path += p + '/'
                 
                 fullpath = path + self.data[self.browser_pos+self.browser_offset].name
-                fullpath = fullpath.replace("'", "\\'")
+                #~ fullpath = fullpath.replace("'", "\\'")
+                #~ fullpath = fullpath.replace(" ", "\ ")
+                #~ fullpath = "'" + fullpath + "'"
                 
                 # directory .. 
                 if os.path.isdir(fullpath):
@@ -336,7 +377,7 @@ class WebkitMediaBrowser():
 
     def cmd_up(self):
         if self.cur_draw == 'video':
-            self.mplayer.forward2()
+            self.mplayer.seek(60)
             
         elif self.cur_draw == 'menu':
             self.browser_pos -= 1
@@ -369,7 +410,7 @@ class WebkitMediaBrowser():
                 
     def cmd_down(self):
         if self.cur_draw == 'video':
-            self.mplayer.backward2()
+            self.mplayer.seek(-60)
 
         else:
             if len(self.data) <= self.theme.browse_maxline:
@@ -395,7 +436,7 @@ class WebkitMediaBrowser():
 
     def cmd_o(self):
         if self.cur_draw == 'video':
-            self.mplayer.osd()
+            self.mplayer.cmd('osd')
 
     def cmd_space(self):
         if self.cur_draw == 'video':
@@ -403,13 +444,13 @@ class WebkitMediaBrowser():
 
     def cmd_left(self):
         if self.cur_draw == 'video':
-            self.mplayer.backward()
+            self.mplayer.seek(-10)
         else:
             self.cmd_escape()
 
     def cmd_right(self):
         if self.cur_draw == 'video':
-            self.mplayer.forward()
+            self.mplayer.seek(10)
         else:
             self.cmd_enter()
 
@@ -426,37 +467,51 @@ class WebkitMediaBrowser():
 
         self.draw_list()
 
-    def play_video(self, video=None):
+    def update_progressbar(self, percent):
+        if percent == -1:
+            return
+
+        html = '<div class="meter-value" style="background-color: #1E90FF; width:'
+        html += str(int(percent)) + '%;">'
+        if percent:
+            html += '<div class="meter-text">' + str(int(percent)) + '%</div>'
+        html += '</div>'
+        self.update_content('progressbar', html)
+
+    def play_video(self, target=None):
         if self.cur_draw == 'video':
-            self.mplayer.stop()
+            self.mplayer.close()
             self.mplayer.hide()
             self.webview.show()
             self.cur_draw = 'browser'
         else:
+            self.mplayer.close()
             self.webview.hide()
             self.mplayer.show()
             self.cur_draw = 'video'
-            self.mplayer.loadfile(video)
+            self.mplayer.play(target)
 
-    def play_song(self, song):
-        self.mplayer.stop()
-        self.mplayer.loadfile(song)
+    def play_song(self, target):
+        self.mplayer.close()
+        self.mplayer.play(target)
         
     def show_image(self, image):
-        html = '<img src="%s">' % image
-        self.update_content('imageview', html)
-        self.flip_image()
+        html = '<h1>' + image.split('/')[-1] + '</h1>'
+        html += '<img src="%s">' % image
+        self.update_content('imagecell', html)
+        if self.cur_draw == 'browser':
+            self.flip_image()
         
     def flip_image(self):
         #~ print 'flip_image .. cur_draw=', self.cur_draw
         if self.cur_draw == 'browser':
             script = "div_hide = document.getElementById(\"container\");" 
             script += "div_hide.style.display = 'none';"
-            script += "div_show = document.getElementById(\"imageview\");" 
-            script += "div_show.style.display = 'block';"
+            script += "div_show = document.getElementById(\"imageviewer\");" 
+            script += "div_show.style.display = 'table';"
             self.cur_draw = 'picture'
         else:
-            script = "div_hide = document.getElementById(\"imageview\");" 
+            script = "div_hide = document.getElementById(\"imageviewer\");" 
             script += "div_hide.style.display = 'none';"
             script += "div_show = document.getElementById(\"container\");" 
             script += "div_show.style.display = 'block';"
@@ -469,9 +524,13 @@ class WebkitMediaBrowser():
         script += "div_content.innerHTML= \"%s\"; " % html.replace('"', '\\"')
         self.webview.execute_script(script)
 
+    def update_status(self, name):
+        html = name.split('/')[-1]
+        self.update_content('status', html)
+        
     def _quit(self, widget=None):
         if self.theme.use_embed_mplayer:
-            self.mplayer.quit()
+            self.mplayer.close()
         gtk.main_quit()
 
     def main(self):
