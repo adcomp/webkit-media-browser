@@ -66,7 +66,7 @@ vertical-align:middle;
 
 #menu { padding: 150px; font-size : 190%; }
 #browser { padding: 25px; font-size : 130%; }
-#browser i { color: #1A1A1A }
+#browser i { color: rgba(0,0,0,0) }
 
 .menu { color : #7F7F7F; padding-bottom: 3px; }
 .menufocus { color : #FFFFFF; padding-bottom: 2px; border-bottom : 1px solid rgba(30,144,255,0.5); }

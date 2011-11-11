@@ -71,6 +71,8 @@ class WebkitMediaBrowser():
         ##  main window 
         self.window = gtk.Window()
         self.window.set_border_width(0)
+        
+        # set bg color to black
         color = gtk.gdk.color_parse('#000')
         self.window.modify_bg(gtk.STATE_NORMAL, color)
         
@@ -85,6 +87,7 @@ class WebkitMediaBrowser():
         self.box.show()
         self.window.add(self.box)
 
+        # WebView
         self.webview = webkit.WebView()
         self.webview.show()
         #~ self.webview.connect("navigation-policy-decision-requested", self.nav_request)
@@ -96,11 +99,12 @@ class WebkitMediaBrowser():
 
         self.box.pack_start(self.webview)
 
+        # MPlayer
         self.mplayer = mplayer.MPlayer(self)
         self.box.pack_start(self.mplayer)
         self.mplayer.realize()
 
-        ##  signal/callback
+        # main window signal/callback
         self.window.connect('destroy', self._quit)
         self.window.connect("key-press-event", self.onkeypress)
         #~ self.window.connect('size-allocate', self._size_allocate)
@@ -252,10 +256,6 @@ class WebkitMediaBrowser():
 
         self.update_content('page', html)
         self.update_content('preview', preview)
-        
-        #~ print preview
-        #~ print html
-        #~ return html
 
     def onkeypress(self, widget, event):
         #~ print 'onkeypress .. cur_draw=', self.cur_draw
@@ -366,12 +366,7 @@ class WebkitMediaBrowser():
                 else:
                     #~ print 'File - ' + fullpath
                     if self.cur_cat == 'VIDEO':
-                        if self.theme.use_embed_mplayer:
-                            self.play_video(fullpath)
-                        else:
-                            cmd = self.theme.cmd_video + " " + self.theme.cmd_video_opt + " "
-                            cmd += "'" + fullpath + "'"
-                            launch_command(cmd)
+                        self.play_video(fullpath)
                         
                     elif self.cur_cat == 'PICTURES':
                         self.show_image(fullpath)
@@ -474,7 +469,6 @@ class WebkitMediaBrowser():
             self.browser_offset += self.theme.browse_maxline
             self.draw_list()
             
-
     def cmd_back(self):
         
         if len(self.path) == 1:
