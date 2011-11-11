@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-#  Webkit Media Browser
+#  Media Browser [ gtk, webkit, mplayer ]
 #
 #  by ADcomp <david.madbox@gmail.com>
 #
@@ -268,9 +268,14 @@ class WebkitMediaBrowser():
 
         if event.keyval == gtk.keysyms.F5:
             print self.get_html()
+            return
 
         if event.keyval == gtk.keysyms.Escape or event.keyval == gtk.keysyms.BackSpace:
             self.cmd_escape()
+        elif event.keyval == gtk.keysyms.Page_Up:
+            self.cmd_page_up()
+        elif event.keyval == gtk.keysyms.Page_Down:
+            self.cmd_page_down()
         elif event.keyval == gtk.keysyms.Up:
             self.cmd_up()
         elif event.keyval == gtk.keysyms.Down:
@@ -453,6 +458,23 @@ class WebkitMediaBrowser():
             self.mplayer.seek(10)
         else:
             self.cmd_enter()
+
+    def cmd_page_up(self):
+        if not self.cur_draw == 'browser':
+            return
+            
+        if (self.browser_pos + self.browser_offset - self.theme.browse_maxline) > 0:
+            self.browser_offset -= self.theme.browse_maxline
+            self.draw_list()
+
+    def cmd_page_down(self):
+        if not self.cur_draw == 'browser':
+            return
+            
+        if len(self.data) > (self.browser_pos + self.browser_offset + self.theme.browse_maxline):
+            self.browser_offset += self.theme.browse_maxline
+            self.draw_list()
+            
 
     def cmd_back(self):
         
